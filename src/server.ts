@@ -1,17 +1,28 @@
 import "reflect-metadata";
-import { createConnection } from "typeorm";
-import { User } from "./entities/User";
+import "colors";
 
-const main = async () => {
-    const conn = await createConnection();
-    await conn.runMigrations();
+import express, { json, Application } from "express";
 
-    const user = new User();
-    user.userName = "satoshi"
-    await conn.manager.save(user)
-    console.log("saved a user with Id:" + user.id)
-}
+import { config } from "dotenv";
+import { connectDB } from "./config/db";
+import { errorHandler, notFound } from "./middleware/error";
 
-main().catch(err => {
-    console.log(err)
-});
+config();
+
+const app: Application = express();
+
+connectDB();
+app.use(json());
+
+app.use(notFound);
+app.use(errorHandler);
+
+const PORT: string | number = process.env.PORT || 5000;
+const ENV: string | number = process.env.NODE_ENV || "development";
+
+app.listen(PORT, () =>
+  console.log(
+    ` 📡 Backend server: `.inverse.yellow.bold +
+      ` Running in ${ENV} mode on port ${PORT}`,
+  ),
+);
